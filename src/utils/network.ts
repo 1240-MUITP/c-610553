@@ -1,64 +1,68 @@
 
 import { Edge } from "@xyflow/react";
-import { communities } from "@/constants/network";
+import { creativeBrainCommunities } from "@/constants/creativeBrain";
 import { CustomNode } from "@/types/network";
 
 export const generateNodes = () => {
   const nodes: CustomNode[] = [];
   let nodeId = 1;
 
-  communities.forEach((community, communityIndex) => {
-    const angleStep = (2 * Math.PI) / communities.length;
+  creativeBrainCommunities.forEach((community, communityIndex) => {
+    const angleStep = (2 * Math.PI) / creativeBrainCommunities.length;
     const communityAngle = angleStep * communityIndex;
-    const communityRadius = 400;
+    const communityRadius = 300;
     const centerX = 500 + communityRadius * Math.cos(communityAngle);
     const centerY = 400 + communityRadius * Math.sin(communityAngle);
 
+    // Central brain node for each community
     nodes.push({
       id: `${nodeId}`,
       data: { 
         label: community.name,
         community: communityIndex,
         isCentral: true,
+        type: "Core"
       },
       position: { x: centerX, y: centerY },
       style: {
         background: community.color,
-        width: 60,
-        height: 60,
-        borderRadius: '50%',
-        border: '2px solid rgba(255, 255, 255, 0.2)',
+        width: 80,
+        height: 80,
+        borderRadius: communityIndex === 2 || communityIndex === 4 ? '12px' : '50%', // Mix of shapes
+        border: '2px solid rgba(255, 255, 255, 0.3)',
         opacity: 0.9,
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        boxShadow: '0 8px 16px rgba(0, 0, 0, 0.3)',
       },
     });
     nodeId++;
 
+    // Generate idea nodes around each central node
     for (let i = 0; i < community.count; i++) {
       const angle = (2 * Math.PI * i) / community.count;
-      const radius = 120 + Math.random() * 80;
+      const radius = 120 + Math.random() * 60;
       const x = centerX + radius * Math.cos(angle);
       const y = centerY + radius * Math.sin(angle);
       
-      const nodeSize = Math.random() * 15 + 20;
+      const nodeSize = Math.random() * 20 + 25;
       const influence = Math.random();
 
       nodes.push({
         id: `${nodeId}`,
         data: { 
-          label: `Node ${nodeId}`,
+          label: `Idea ${nodeId}`,
           community: communityIndex,
           influence,
+          type: "Idea"
         },
         position: { x, y },
         style: {
           background: community.color,
           width: nodeSize,
           height: nodeSize,
-          borderRadius: '50%',
-          border: '1px solid rgba(255, 255, 255, 0.15)',
-          opacity: 0.7 + (influence * 0.3),
-          boxShadow: '0 2px 4px rgba(0, 0, 0, 0.05)',
+          borderRadius: Math.random() > 0.5 ? '50%' : '8px',
+          border: '1px solid rgba(255, 255, 255, 0.2)',
+          opacity: 0.8 + (influence * 0.2),
+          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
         },
       });
       nodeId++;

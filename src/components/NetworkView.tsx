@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { ReactFlowProvider } from "@xyflow/react";
 import NetworkGraph from "@/components/NetworkGraph";
@@ -10,10 +11,10 @@ import { Connection, Edge, NodeMouseHandler, EdgeChange } from "@xyflow/react";
 import { useState } from "react";
 import { EditNodeDialog } from "@/components/EditNodeDialog";
 import { CreateEdgeDialog } from "@/components/CreateEdgeDialog";
-import { NetworkSidebar } from "./layout/NetworkSidebar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { NodeDetailPanel } from "@/components/NodeDetailPanel";
+import { Filter } from "lucide-react";
 
 interface NetworkViewProps {
   nodes: CustomNode[];
@@ -77,29 +78,26 @@ export const NetworkView = ({
   };
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="border-b px-4 md:px-6 py-3 flex justify-between items-center">
-        <h2 className="text-lg font-medium">Network Visualization</h2>
-        <NetworkFilter 
-          selectedCommunities={selectedCommunities}
-          onFilterChange={onFilterChange}
-        />
-      </div>
-
-      <div className="flex-1 flex flex-col lg:flex-row">
-        <div className="lg:hidden">
-          <NetworkSidebar 
-            onAddNode={onAddNode}
-            onCreateEdge={() => setIsCreateEdgeDialogOpen(true)}
-            onEditNode={handleEditNode}
-            onDeleteSelection={handleDeleteSelection}
-            searchQuery={searchQuery}
-            onSearchChange={onSearchChange}
+    <div className="flex-1 flex flex-col bg-background">
+      {/* Header */}
+      <div className="border-b border-border px-6 py-4 flex justify-between items-center bg-card">
+        <div>
+          <h2 className="text-2xl font-bold text-foreground">Creative Brain Network</h2>
+          <p className="text-sm text-muted-foreground">Visualize and connect your creative ideas</p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="h-4 w-4 text-muted-foreground" />
+          <NetworkFilter 
+            selectedCommunities={selectedCommunities}
+            onFilterChange={onFilterChange}
           />
         </div>
-        
-        <div className="flex-1 p-4 md:p-6">
-          <Card className="h-full">
+      </div>
+
+      <div className="flex-1 flex">
+        {/* Main Canvas */}
+        <div className="flex-1 p-6">
+          <Card className="h-full bg-card border-border">
             <ReactFlowProvider>
               <NetworkGraph 
                 nodes={filteredNodes}
@@ -112,9 +110,10 @@ export const NetworkView = ({
           </Card>
         </div>
 
-        <div className="border-t lg:border-t-0 lg:border-l w-full lg:w-80 p-4 overflow-y-auto">
+        {/* Right Sidebar */}
+        <div className="w-80 border-l border-border bg-card p-6 overflow-y-auto">
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="w-full mb-4">
+            <TabsList className="w-full mb-6 bg-background">
               <TabsTrigger value="overview" className="flex-1">Overview</TabsTrigger>
               <TabsTrigger value="tools" className="flex-1">Tools</TabsTrigger>
               {selectedNode && (

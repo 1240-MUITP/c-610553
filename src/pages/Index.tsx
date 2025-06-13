@@ -18,6 +18,7 @@ const Index = () => {
     communities.map((_, index) => index)
   );
   const [searchQuery, setSearchQuery] = useState("");
+  const [isCreateEdgeDialogOpen, setIsCreateEdgeDialogOpen] = useState(false);
 
   // Filter nodes based on selected communities and search query
   const filteredNodes = useMemo(() => {
@@ -212,7 +213,14 @@ const Index = () => {
   }, []);
 
   return (
-    <MainLayout>
+    <MainLayout
+      onAddNode={handleAddNode}
+      onCreateEdge={() => setIsCreateEdgeDialogOpen(true)}
+      onEditNode={handleEditNode}
+      onDeleteSelection={handleDeleteSelection}
+      searchQuery={searchQuery}
+      onSearchChange={handleSearchChange}
+    >
       <NetworkView
         nodes={nodes}
         edges={filteredEdges}
