@@ -15,6 +15,10 @@ serve(async (req) => {
   }
 
   try {
+    if (!openAIApiKey) {
+      throw new Error('OpenAI API key not configured');
+    }
+
     const { action, context } = await req.json();
 
     let systemPrompt = "";
@@ -40,6 +44,8 @@ serve(async (req) => {
         throw new Error('Invalid action specified');
     }
 
+    console.log('Making OpenAI API request with action:', action);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -57,7 +63,19 @@ serve(async (req) => {
       }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.text();
+      console.error('OpenAI API error:', response.status, errorData);
+      throw new Error(`OpenAI API error: ${response.status} ${errorData}`);
+    }
+
     const data = await response.json();
+    console.log('OpenAI API response:', data);
+
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+      throw new Error('Invalid response format from OpenAI API');
+    }
+
     const result = data.choices[0].message.content;
 
     return new Response(JSON.stringify({ result, action }), {

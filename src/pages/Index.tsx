@@ -80,6 +80,10 @@ const Index = () => {
     toast.success("Node added successfully");
   };
 
+  const handleCreateEdge = useCallback(() => {
+    toast.info("Select two nodes to create a connection");
+  }, []);
+
   const handleEditNode = useCallback(() => {
     if (selectedNode) {
       console.log("Edit node:", selectedNode);
@@ -246,7 +250,7 @@ const Index = () => {
   return (
     <MainLayout
       onAddNode={handleAddNode}
-      onCreateEdge={() => setIsCreateEdgeDialogOpen(true)}
+      onCreateEdge={handleCreateEdge}
       onEditNode={handleEditNode}
       onDeleteSelection={handleDeleteSelection}
       searchQuery={searchQuery}

@@ -3,8 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { AddNodeDialog } from "@/components/AddNodeDialog";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { BrainFunctionDialog } from "@/components/BrainFunctionDialog";
 import {
   Brain,
   Search,
@@ -36,40 +35,12 @@ export const CreativeBrainSidebar = ({
   searchQuery,
   onSearchChange,
 }: CreativeBrainSidebarProps) => {
-  const [isLoading, setIsLoading] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [selectedFunction, setSelectedFunction] = useState<'generate_ideas' | 'chat_with_brain' | 'synthesize_all'>('generate_ideas');
 
-  const handleBrainFunction = async (action: string, context: string) => {
-    setIsLoading(true);
-    try {
-      const { data, error } = await supabase.functions.invoke('brain-ai', {
-        body: { action, context }
-      });
-
-      if (error) throw error;
-
-      if (action === 'generate_ideas') {
-        try {
-          const ideas = JSON.parse(data.result);
-          ideas.forEach((idea: any, index: number) => {
-            onAddNode({
-              name: idea.name,
-              type: idea.type || 'generated',
-              community: Math.floor(Math.random() * 6) // Random community for now
-            });
-          });
-          toast.success(`Generated ${ideas.length} new ideas!`);
-        } catch {
-          toast.info("AI Response: " + data.result);
-        }
-      } else {
-        toast.info("AI Response: " + data.result);
-      }
-    } catch (error) {
-      console.error('Error calling brain AI:', error);
-      toast.error('Failed to process brain function');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleBrainFunction = (functionType: 'generate_ideas' | 'chat_with_brain' | 'synthesize_all') => {
+    setSelectedFunction(functionType);
+    setDialogOpen(true);
   };
 
   return (
@@ -148,33 +119,30 @@ export const CreativeBrainSidebar = ({
           variant="ghost" 
           className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" 
           size="sm"
-          disabled={isLoading}
-          onClick={() => handleBrainFunction('generate_ideas', searchQuery || 'creative thinking')}
+          onClick={() => handleBrainFunction('generate_ideas')}
         >
           <Lightbulb className="mr-3 h-4 w-4" />
-          {isLoading ? 'Generating...' : 'Generate Ideas'}
+          Generate Ideas
         </Button>
         
         <Button 
           variant="ghost" 
           className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" 
           size="sm"
-          disabled={isLoading}
-          onClick={() => handleBrainFunction('chat_with_brain', 'current creative session')}
+          onClick={() => handleBrainFunction('chat_with_brain')}
         >
           <MessageCircle className="mr-3 h-4 w-4" />
-          {isLoading ? 'Thinking...' : 'Chat with Brain'}
+          Chat with Brain
         </Button>
         
         <Button 
           variant="ghost" 
           className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" 
           size="sm"
-          disabled={isLoading}
-          onClick={() => handleBrainFunction('synthesize_all', 'all ideas in the network')}
+          onClick={() => handleBrainFunction('synthesize_all')}
         >
           <Shuffle className="mr-3 h-4 w-4" />
-          {isLoading ? 'Synthesizing...' : 'Synthesize All'}
+          Synthesize All
         </Button>
       </div>
 
@@ -186,6 +154,13 @@ export const CreativeBrainSidebar = ({
           Visualize and connect your creative ideas
         </p>
       </div>
+
+      <BrainFunctionDialog
+        isOpen={dialogOpen}
+        onOpenChange={setDialogOpen}
+        functionType={selectedFunction}
+        onAddNode={onAddNode}
+      />
     </div>
   );
 };
