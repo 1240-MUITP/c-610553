@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { NetworkView } from "@/components/NetworkView";
@@ -5,7 +6,7 @@ import { generateNodes, generateEdges } from "@/utils/network";
 import { toast } from "sonner";
 import { CustomNode } from "@/types/network";
 import { Connection, Edge, EdgeChange } from "@xyflow/react";
-import { communities } from "@/constants/network";
+import { creativeBrainCommunities } from "@/constants/creativeBrain";
 import { LayoutType, applyLayout } from "@/utils/layouts";
 
 const initialNodes = generateNodes();
@@ -15,17 +16,18 @@ const Index = () => {
   const [nodes, setNodes] = useState(initialNodes);
   const [edges, setEdges] = useState(initialEdges);
   const [selectedCommunities, setSelectedCommunities] = useState<number[]>(
-    communities.map((_, index) => index)
+    creativeBrainCommunities.map((_, index) => index)
   );
   const [searchQuery, setSearchQuery] = useState("");
   const [isCreateEdgeDialogOpen, setIsCreateEdgeDialogOpen] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
 
   // Filter nodes based on selected communities and search query
   const filteredNodes = useMemo(() => {
     let filtered = nodes;
     
     // Filter by community
-    if (selectedCommunities.length < communities.length) {
+    if (selectedCommunities.length < creativeBrainCommunities.length) {
       filtered = filtered.filter(node => 
         selectedCommunities.includes(node.data.community)
       );
@@ -67,7 +69,7 @@ const Index = () => {
       },
       position: { x: Math.random() * 500, y: Math.random() * 500 },
       style: {
-        background: communities[nodeData.community].color,
+        background: creativeBrainCommunities[nodeData.community].color,
         width: 30,
         height: 30,
         borderRadius: '50%',
@@ -79,6 +81,32 @@ const Index = () => {
     setNodes([...nodes, newNode]);
     toast.success("Node added successfully");
   };
+
+  const handleEditNode = useCallback(() => {
+    if (selectedNode) {
+      console.log("Edit node:", selectedNode);
+      toast.info("Edit functionality to be implemented");
+    } else {
+      toast.error("Please select a node to edit");
+    }
+  }, [selectedNode]);
+
+  const handleDeleteSelection = useCallback(() => {
+    if (selectedNode) {
+      // Remove the node
+      setNodes(prevNodes => prevNodes.filter(node => node.id !== selectedNode.id));
+      
+      // Remove all edges connected to this node
+      setEdges(prevEdges => prevEdges.filter(
+        edge => edge.source !== selectedNode.id && edge.target !== selectedNode.id
+      ));
+      
+      setSelectedNode(null);
+      toast.success("Node deleted successfully");
+    } else {
+      toast.error("Please select a node to delete");
+    }
+  }, [selectedNode]);
 
   const handleUpdateNode = useCallback((nodeId: string, updates: { name: string; type: string; community: number }) => {
     setNodes(prevNodes => prevNodes.map(node => {
@@ -93,7 +121,7 @@ const Index = () => {
           },
           style: {
             ...node.style,
-            background: communities[updates.community].color,
+            background: creativeBrainCommunities[updates.community].color,
           }
         };
       }
@@ -212,6 +240,11 @@ const Index = () => {
     setEdges(newEdges);
   }, []);
 
+  const handleNodeClick = useCallback((event: React.MouseEvent, node: CustomNode) => {
+    setSelectedNode(node);
+    console.log("Selected node:", node);
+  }, []);
+
   return (
     <MainLayout
       onAddNode={handleAddNode}
@@ -237,6 +270,7 @@ const Index = () => {
         onCreateEdge={handleCreateEdge}
         onApplyLayout={handleApplyLayout}
         onLoadNetwork={handleLoadNetwork}
+        onNodeClick={handleNodeClick}
       />
     </MainLayout>
   );
