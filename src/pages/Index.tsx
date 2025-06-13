@@ -1,4 +1,3 @@
-
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { NetworkView } from "@/components/NetworkView";
@@ -19,7 +18,6 @@ const Index = () => {
     creativeBrainCommunities.map((_, index) => index)
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [isCreateEdgeDialogOpen, setIsCreateEdgeDialogOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<CustomNode | null>(null);
 
   // Filter nodes based on selected communities and search query
@@ -270,7 +268,6 @@ const Index = () => {
         onCreateEdge={handleCreateEdge}
         onApplyLayout={handleApplyLayout}
         onLoadNetwork={handleLoadNetwork}
-        onNodeClick={handleNodeClick}
       />
     </MainLayout>
   );

@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { AddNodeDialog } from "@/components/AddNodeDialog";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import {
   Brain,
   Search,
@@ -15,6 +17,7 @@ import {
   Settings,
   Trash2,
 } from "lucide-react";
+import { useState } from "react";
 
 interface CreativeBrainSidebarProps {
   onAddNode: (nodeData: { name: string; type: string; community: number }) => void;
@@ -33,6 +36,42 @@ export const CreativeBrainSidebar = ({
   searchQuery,
   onSearchChange,
 }: CreativeBrainSidebarProps) => {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleBrainFunction = async (action: string, context: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('brain-ai', {
+        body: { action, context }
+      });
+
+      if (error) throw error;
+
+      if (action === 'generate_ideas') {
+        try {
+          const ideas = JSON.parse(data.result);
+          ideas.forEach((idea: any, index: number) => {
+            onAddNode({
+              name: idea.name,
+              type: idea.type || 'generated',
+              community: Math.floor(Math.random() * 6) // Random community for now
+            });
+          });
+          toast.success(`Generated ${ideas.length} new ideas!`);
+        } catch {
+          toast.info("AI Response: " + data.result);
+        }
+      } else {
+        toast.info("AI Response: " + data.result);
+      }
+    } catch (error) {
+      console.error('Error calling brain AI:', error);
+      toast.error('Failed to process brain function');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="w-64 bg-sidebar border-r border-sidebar-border flex flex-col">
       {/* Header */}
@@ -105,19 +144,37 @@ export const CreativeBrainSidebar = ({
       <div className="px-4 py-4 space-y-2">
         <h3 className="text-sm font-medium text-sidebar-foreground/70 mb-3">Brain Functions</h3>
         
-        <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" size="sm">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" 
+          size="sm"
+          disabled={isLoading}
+          onClick={() => handleBrainFunction('generate_ideas', searchQuery || 'creative thinking')}
+        >
           <Lightbulb className="mr-3 h-4 w-4" />
-          Generate Ideas
+          {isLoading ? 'Generating...' : 'Generate Ideas'}
         </Button>
         
-        <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" size="sm">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" 
+          size="sm"
+          disabled={isLoading}
+          onClick={() => handleBrainFunction('chat_with_brain', 'current creative session')}
+        >
           <MessageCircle className="mr-3 h-4 w-4" />
-          Chat with Brain
+          {isLoading ? 'Thinking...' : 'Chat with Brain'}
         </Button>
         
-        <Button variant="ghost" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" size="sm">
+        <Button 
+          variant="ghost" 
+          className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent" 
+          size="sm"
+          disabled={isLoading}
+          onClick={() => handleBrainFunction('synthesize_all', 'all ideas in the network')}
+        >
           <Shuffle className="mr-3 h-4 w-4" />
-          Synthesize All
+          {isLoading ? 'Synthesizing...' : 'Synthesize All'}
         </Button>
       </div>
 
